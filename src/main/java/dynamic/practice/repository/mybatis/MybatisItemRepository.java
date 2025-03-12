@@ -37,4 +37,20 @@ public class MybatisItemRepository {
         return itemMapper.findAll(cond);
     }
 
+    public List<Item> findPrice44444WithTitleLike(ItemSearchCond cond) {
+        return itemMapper.findPrice44444WithTitleLike(cond);
+    }
+
+    public List<Item> chooseWhenOtherwiseTest(String itemName, Item item){
+        return itemMapper.chooseWhenOtherwiseTest(itemName, item);
+    }
+
+    public List<Item> testTrim(ItemSearchCond cond){
+        return itemMapper.testTrim(cond);
+    }
+
+    public List<Item> foreachTest(List<Item> itemList){
+        return itemMapper.foreachTest(itemList);
+    }
+
 }
