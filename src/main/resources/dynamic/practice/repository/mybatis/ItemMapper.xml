@@ -13,17 +13,17 @@
             item_name = #{updateParam.itemName},
             price = #{updateParam.price},
             quantity = #{updateParam.quantity}
-        where id = #{id}
+        where id = #{itemId}
     </update>
 
     <select id="findById" resultType="Item">
-        select id, item_name, price, quantity
+        select id as itemId, item_name, price, quantity
         from item
-        where id = #{id}
+        where id = #{itemId}
     </select>
 
     <select id="findAll" resultType="Item">
-        select id, item_name, price, quantity
+        select id as itemId, item_name, price, quantity
         from item
         <where>
             <if test="itemName != null and itemName != ''">
@@ -43,7 +43,7 @@
     <!-- "MyBatis기능 정리1-동적쿼리", 동적 SQL 연습 -->
 <!--    if-->
     <select id="findPrice44444WithTitleLike" resultType="Item">
-        SELECT * FROM ITEM
+        SELECT id as itemId, item_name, price, quantity FROM ITEM
         WHERE PRICE = 44444
         <if test="itemName != null">
             AND ITEM_NAME LIKE #{itemName}
@@ -51,7 +51,7 @@
     </select>
 <!--    choose, when, otherwise-->
     <select id="chooseWhenOtherwiseTest" resultType="Item">
-        SELECT * FROM ITEM WHERE 1=1
+        SELECT id as itemId, item_name, price, quantity FROM ITEM WHERE 1=1
         <choose>
             <when test="itemName != null">
                 AND item_name like #{itemName}
@@ -80,7 +80,7 @@
     </select>
 <!--    foreach-->
     <select id="foreachTest" resultType="Item">
-        SELECT * FROM ITEM WHERE
+        SELECT id as itemId, item_name, price, quantity FROM ITEM WHERE
         <foreach
                 collection="items"
                 open="price IN ("
@@ -123,5 +123,51 @@
 <!--    적용을 시킴으로서 최종적인 SQL문장(부분 문장)을 만들때 당연히 collection의 값, index의 값, item의 값을-->
 <!--    <foreach>문 안에서 쓸 수가 있는데, 이때에도 그 값( collection의 값, index의 값, item의 값 )을-->
 <!--    #{...} 안에 써준다. (파라미터로 들어오는 값을 받을때와 동일하다.)-->
+
+<!--    재사용 가능한 SQL조각-->
+<!--    <sql>을 사용하면 SQL코드를 재사용 할 수 있다.-->
+    <sql id="itemColumns">id as itemId, item_name, price, quantity</sql>
+    <sql id="itemColumns01">${alias}.id, ${alias}.item_name, ${alias}.price, ${alias}.quantity</sql>
+
+    <select id="selectItems" resultType="Item">
+        SELECT <include refid="itemColumns"></include>
+        FROM ITEM
+    </select>
+
+    <select id="selectItems01" resultType="Item">
+        SELECT <include refid="itemColumns01"><property name="alias" value="t1"/></include>
+        FROM ITEM t1
+    </select>
+<!--    ResultMap-->
+<!--    결과를 매핑할 때 테이블은 id이지만 객체는 itemId이다.-->
+<!--    이 경우 컬럼명과 객체의 프로퍼티 명이 다르다. 그러면 보통 다음과 같이 별칭(as)을 사용하면 된다.-->
+    <select id="selectItems02" resultType="Item">
+        SELECT
+            id as itemId,
+            item_name as itemName,
+            price,
+            quantity
+        FROM ITEM
+        WHERE id = #{itemId}
+    </select>
+<!--    별칭을 사용하지 않고도 문제를 해결할 수 있는데, 다음과 같이 resultMap을 선언해서 사용하면 된다.-->
+    <resultMap id="itemResultMap" type="Item">
+<!--        1) resultMap에 대한 별칭을 id의 값으로 써준다.-->
+<!--        2) 내가 만든 resultMap이 변환되는 객체를 type의 값으로 써준다.-->
+        <id property="itemId" column="id"></id>
+        <result property="itemName" column="item_name"></result>
+        <result property="price" column="price"></result>
+        <result property="quantity" column="quantity"></result>
+<!--        3) DB에서의 컬럼은 객체에서의 이런 필드명으로 바뀔것이다. 라고 정의해 두는데-->
+<!--           id의 경우는 <id>태그 안에 저의하고 나머지 필드나 컬럼은 <result>태그 안에 정의한다.-->
+    </resultMap>
+
+    <select id="selectItems03" resultMap="itemResultMap">
+--         내가 선언한 resultMap을 resultMap필드의 값으로 써주면 된다.
+--         그럼 DB컬럼명이 객체 컬럼명으로 인식해서 객체에 DB데이터가 담긴다.
+        SELECT id, item_name, price, quantity
+        FROM ITEM
+        WHERE id = #{itemId}
+    </select>
 
 </mapper>

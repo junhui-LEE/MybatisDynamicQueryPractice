@@ -49,7 +49,7 @@ public class MybatisItemController {
     @PostMapping("/items/add")
     public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes) {
         Item savedItem = mybatisItemService.save(item);
-        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("itemId", savedItem.getItemId());
         redirectAttributes.addAttribute("status", true);
         return "redirect:/items/{itemId}";
     }
